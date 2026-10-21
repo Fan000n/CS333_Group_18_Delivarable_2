@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dubai Real-Estate Transactions · Vega-Lite</title>
+
+<script src="https://cdn.jsdelivr.net/npm/vega@5.30.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/vega-lite@5.21.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/vega-embed@6.26.0"></script>
+
+<style>
+  :root {
+    --ink: #1c2530;
+    --muted: #5b6673;
+    --line: #d9dee4;
+    --bg: #f3f5f7;
+    --card: #ffffff;
+    --accent: #1f5f8b;
+    --answer: #eaf3f9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0 16px 64px;
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink); background: var(--bg); line-height: 1.55;
+  }
+  main {width: 1100px; margin: 0 auto; padding: 0 16px;}
+  header { padding: 40px 0 8px; }
+  h1 { font-size: 1.9rem; margin: 0 0 6px; letter-spacing: -0.01em; }
+  header p { margin: 0; color: var(--muted); max-width: 70ch; }
+  section {
+    background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+    padding: 24px 26px 26px; margin-top: 28px;
+  }
+  h2 { font-size: 1.3rem; margin: 0 0 4px; }
+  .goal { margin: 0 0 16px; color: var(--muted); max-width: 80ch; }
+  .chart { width: 100%; }
+  .map-wrap { overflow-x: auto; }
+  .answer {
+    margin-top: 18px; padding: 14px 18px; background: var(--answer);
+    border-left: 4px solid var(--accent); border-radius: 0 6px 6px 0;
+  }
+  .answer h3 { margin: 0 0 6px; font-size: 1rem; }
+  .answer p { margin: 6px 0; max-width: 90ch; }
+  .answer strong.num { color: var(--accent); }
+  .notes { margin-top: 12px; font-size: 0.88rem; color: var(--muted); max-width: 95ch; }
+  .notes ul { margin: 6px 0 0; padding-left: 20px; }
+  .key { display: flex; flex-wrap: wrap; gap: 18px; margin: 4px 0 10px; font-size: 0.86rem; color: var(--muted); }
+  .key span { display: inline-flex; align-items: center; gap: 6px; }
+  .swatch { width: 16px; height: 12px; border: 1px solid #aaa; display: inline-block; }
+  /* Vega-embed bits */
+  .vega-embed { width: 100%; }
+  .vega-embed.has-actions { padding-right: 0; }
+  .vega-embed details summary { top: -4px; }
+  .vega-bindings { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 10px 28px; font-size: 0.9rem; }
+  .vega-bindings .vega-bind { display: inline-flex; align-items: center; gap: 6px; }
+  .vega-bindings .vega-bind-name { white-space: nowrap; }
+  .error { color: #a12b2b; font-weight: 600; }
+  footer { margin-top: 30px; color: var(--muted); font-size: 0.85rem; }
+</style>
+</head>
+
+<body>
+<main>
+  <header>
+    <h1>Dubai Land Department: real-estate transactions</h1>
+    </header>
+
+  <!-- ============================ TASK 1 ============================ -->
+  <section id="task1">
+    <h2>Task 1: Transactions by Days of the Week</h2>
+    <p class="goal">Number of transactions registered on each day of the week. All seven days are shown, including days with no transactions.</p>
+    <div id="vis1" class="chart"></div>
+    <div class="answer">
+      <h3>Question: How many transactions were registered on Fridays?</h3>
+      <p><strong class="num" id="ans1-count">6,553</strong> transactions were registered on Fridays between 1 January 2015 and 31 August 2026.</p>
+      </div>
+  </section>
+
+  <!-- ============================ TASK 2 ============================ -->
+  <section id="task2">
+    <h2>Task 2: Monthly Sales, Off-plan vs. Existing Properties</h2>
+    <p class="goal">Number of sales (trans_group_en = Sales) per month for off-plan and existing properties.
+      (double-click to reset)</p>
+    <div id="vis2" class="chart"></div>
+    <div class="answer">
+      <h3>Question: In which month is the number of off-plan sales the highest, and how many off-plan sales is it?</h3>
+      <p>Off-plan sales peaked in <strong class="num" id="ans2-month">September 2025</strong> with <strong class="num" id="ans2-count">706</strong> sales.</p>
+    </div>
+  </section>
+
+  <!-- ============================ TASK 3 ============================ -->
+  <section id="task3">
+    <h2>Task 3: Map of prices across Dubai's communities</h2>
+    <p class="goal">Median price per square metre of unit and villa sales in each community. Hover over a community for its name, number of sales and median price. Use the controls below the map to zoom.</p>
+    <div class="key">
+      <span><i class="swatch" style="background:#ececec"></i>No unit or villa sales in the window</span>
+      <span><i class="swatch" style="background:#a9a9a9"></i>Fewer sales than the chosen minimum (price not coloured, still shown on the visualization)</span>
+    </div>
+    <div class="map-wrap"><div id="vis3" class="chart"></div></div>
+    <div class="answer">
+      <h3>Question: Which community has the largest number of sales of units and villas, and how many sales is it? Is this visualization effective in finding this community? Why?</h3>
+      <p><strong class="num" id="ans3-name">AL BARSHA SOUTH FOURTH</strong> (community <span id="ans3-num">681</span>) has the most unit and villa sales, with <strong class="num" id="ans3-count">3,925</strong> sales.</p>
+      <p><strong>Not very effective.</strong> The colour of each community encodes the <em>median price per m²</em>, not the number of sales, so NO its not visible on the map at all. The only way to find it is to hover over communities one by one and compare their tooltips, and there are 226 communities, many of them tiny or in the desert. But to make this easier, we added a toggleable option that overlays circles on the communities, with each circle's size showing the number of sales.</p>
+      </div>
+    <div class="notes">
+      Design choices for reliable colours:
+      <ul>
+        <li>Communities with fewer sales than the chosen minimum (default 10) are not coloured, because a median of a handful of transactions is not trustworthy. They are drawn in dark grey and still show their count and price in the tooltip. Communities with no sales at all are light grey, so all 226 communities remain visible.</li>
+        </ul>
+    </div>
+  </section>
+
+  <footer>
+    Data: Dubai Land Department transactions and Dubai Municipality community boundaries (CS333 course repository). Built with Vega-Lite.
+  </footer>
+</main>
+
+<script>
+/* ---------------------------------------------------------------------
+  Vega-Lite specifications (plain JSON objects)
+--------------------------------------------------------------------- */
+const CSV_URL = "https://raw.githubusercontent.com/sharios/CS333/main/2026-27/Part%202/transactions.csv";
+const GEO_URL = "https://raw.githubusercontent.com/sharios/CS333/main/2026-27/Part%202/dubai.geojson";
+
+/* Dates like "2017-05-17" are parsed as UTC midnight, and every time-based
+  operation below uses the UTC variants (utcFormat, utcyearmonth, utc scale),
+   so results never depend on the time zone of the viewer's computer. */
+const DATA = {
+  url: CSV_URL,
+  format: {
+    type: "csv",
+    parse: {
+      instance_date: "date",
+      meter_sale_price: "number",
+      actual_worth: "number",
+      procedure_area: "number",
+      comm_num: "number"
+    }
+  }
+};
+
+/* Analysis window: 1 Jan 2015 to 31 Aug 2026, both included */
+const IN_WINDOW =
+  "datum.instance_date >= utc(2015, 0, 1) && datum.instance_date <= utc(2026, 7, 31, 23, 59, 59, 999)";
+
+const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const DAY_COLORS = ["#4e79a7", "#f28e2b", "#e15759", "#76b7b2", "#59a14f", "#edc948", "#b07aa1"];
+
+const BASE_CONFIG = {
+  view: { stroke: null },
+  font: "Segoe UI, system-ui, Arial, sans-serif",
+  axis: { titleFontSize: 13, labelFontSize: 12, titleFontWeight: 600 },
+  legend: { titleFontSize: 12, labelFontSize: 12 },
+  title: { fontSize: 15, fontWeight: 600, anchor: "start" }
+};
+
+/* ---------------------------- TASK 1 ---------------------------- */
+const spec1 = {
+  $schema: "https://vega.github.io/schema/vega-lite/v5.json",
+  title: "Transactions by day of the week (1 Jan 2015 – 31 Aug 2026)",
+  width: "container",
+  height: 380,
+  autosize: { type: "fit", contains: "padding" },
+  config: BASE_CONFIG,
+  data: DATA,
+  transform: [
+    { filter: IN_WINDOW },
+    { calculate: "utcFormat(datum.instance_date, '%A')", as: "weekday" },
+    { aggregate: [{ op: "count", as: "n" }], groupby: ["weekday"] },
+    /* make sure days without any transaction still exist, with a count of 0 */
+    { impute: "n", key: "weekday", keyvals: DAYS, value: 0 }
+  ],
+  layer: [
+    {
+      params: [{
+        name: "hoverDay",
+        select: { type: "point", fields: ["weekday"], on: "mouseover", clear: "mouseout" }
+      }],
+      mark: { type: "bar", cornerRadiusTopLeft: 3, cornerRadiusTopRight: 3 },
+      encoding: {
+        x: {
+          field: "weekday", type: "ordinal", sort: DAYS,
+          scale: { domain: DAYS },
+          axis: { title: "Day of the week", labelAngle: 0 }
+        },
+        y: {
+          field: "n", type: "quantitative",
+          axis: { title: "Number of transactions", format: ",d" }
+        },
+        color: {
+          field: "weekday", type: "nominal",
+          scale: { domain: DAYS, range: DAY_COLORS },
+          legend: null
+        },
+        opacity: { condition: { param: "hoverDay", value: 1 }, value: 0.55 },
+        tooltip: [
+          { field: "weekday", type: "nominal", title: "Day" },
+          { field: "n", type: "quantitative", title: "Transactions", format: ",d" }
+        ]
+      }
+    },
+    {
+      mark: { type: "text", baseline: "bottom", dy: -4, fontSize: 12, fontWeight: 600 },
+      encoding: {
+        x: { field: "weekday", type: "ordinal", sort: DAYS, scale: { domain: DAYS } },
+        y: { field: "n", type: "quantitative" },
+        text: { field: "n", type: "quantitative", format: ",d" }
+      }
+    }
+  ]
+};
+
+/* ---------------------------- TASK 2 ---------------------------- */
+const REG_TYPES = ["Existing Properties", "Off-Plan Properties"];
+const MONTHLY = [
+  { filter: IN_WINDOW },
+  { filter: "datum.trans_group_en == 'Sales'" },
+  { timeUnit: "utcyearmonth", field: "instance_date", as: "month" },
+  { aggregate: [{ op: "count", as: "n" }], groupby: ["month", "reg_type_en"] },
+  { impute: "n", key: "month", groupby: ["reg_type_en"], value: 0 },
+  { calculate: "utcFormat(datum.month, '%B %Y')", as: "monthLabel" }
+];
+const PEAK = [
+  { filter: "datum.reg_type_en == 'Off-Plan Properties'" },
+  { joinaggregate: [{ op: "max", field: "n", as: "maxN" }] },
+  { filter: "datum.n === datum.maxN" },
+  { calculate: "'Peak: ' + datum.monthLabel + ' (' + format(datum.n, ',d') + ' sales)'", as: "peakLabel" }
+];
+const X_MONTH = {
+  field: "month", type: "temporal", scale: { type: "utc" },
+  axis: {
+    title: "Month (tick labels mark each year)", format: "%Y", labelAngle: 0,
+    tickCount: { interval: "year", step: 1 }, grid: true, gridOpacity: 0.35
+  }
+};
+const Y_SALES = {
+  field: "n", type: "quantitative",
+  axis: { title: "Number of sales per month", format: ",d" }
+};
+
+const spec2 = {
+  $schema: "https://vega.github.io/schema/vega-lite/v5.json",
+  title: "Monthly sales: off-plan vs. existing properties (Jan 2015 – Aug 2026)",
+  width: "container",
+  height: 400,
+  autosize: { type: "fit", contains: "padding" },
+  config: BASE_CONFIG,
+  data: DATA,
+  transform: MONTHLY,
+  layer: [
+    {
+      params: [
+        { name: "zoomTime", select: { type: "interval", encodings: ["x"] }, bind: "scales" },
+        { name: "series", select: { type: "point", fields: ["reg_type_en"] }, bind: "legend" }
+      ],
+      mark: { type: "line", strokeWidth: 2.2, point: { filled: true, size: 28 } },
+      encoding: {
+        x: X_MONTH,
+        y: Y_SALES,
+        color: {
+          field: "reg_type_en", type: "nominal",
+          scale: { domain: REG_TYPES, range: ["#2b7bba", "#e8742a"] },
+          legend: { title: "Property type", orient: "top-left", direction: "horizontal", symbolType: "stroke", symbolStrokeWidth: 3, labelLimit: 220, titleLimit: 220 }
+        },
+        opacity: { condition: { param: "series", value: 1 }, value: 0.15 },
+        tooltip: [
+          { field: "monthLabel", type: "nominal", title: "Month" },
+          { field: "reg_type_en", type: "nominal", title: "Property type" },
+          { field: "n", type: "quantitative", title: "Sales", format: ",d" }
+        ]
+      }
+    },
+    {
+      transform: PEAK,
+      mark: { type: "point", size: 170, filled: false, stroke: "#111", strokeWidth: 2 },
+      encoding: { x: X_MONTH, y: Y_SALES }
+    },
+    {
+      transform: PEAK,
+      mark: { type: "text", align: "right", dx: -10, dy: -12, fontWeight: 700, fontSize: 12, color: "#111" },
+      encoding: { x: X_MONTH, y: Y_SALES, text: { field: "peakLabel", type: "nominal" } }
+    }
+  ]
+};
+
+/* ---------------------------- TASK 3 ---------------------------- */
+const GEO_DATA = { url: GEO_URL, format: { type: "json", property: "features" } };
+
+/* units + villas sales -> per-community count and median price per m2 -> join with boundaries */
+const COMMUNITY_STATS = [
+  { filter: IN_WINDOW },
+  { filter: "datum.trans_group_en == 'Sales'" },
+  { filter: "datum.property_type_en == 'Unit' || datum.property_type_en == 'Villa'" },
+  { filter: "datum.meter_sale_price > 0" },
+  { calculate: "toString(datum.comm_num)", as: "cn" },
+  {
+    aggregate: [
+      { op: "count", as: "sales" },
+      { op: "median", field: "meter_sale_price", as: "median_price" }
+    ],
+    groupby: ["cn"]
+  },
+  {
+    lookup: "cn",
+    from: { data: GEO_DATA, key: "properties.COMM_NUM", fields: ["geometry", "properties"] },
+    as: ["geometry", "props"]
+  }
+];
+
+const TOOLTIP_STATS = [
+  { field: "props.CNAME_E", type: "nominal", title: "Community" },
+  { field: "sales", type: "quantitative", title: "Number of sales", format: ",d" },
+  { field: "median_price", type: "quantitative", title: "Median price per m² (AED)", format: ",.0f" }
+];
+
+const spec3 = {
+  $schema: "https://vega.github.io/schema/vega-lite/v5.json",
+  title: "Median price per m² of unit and villa sales by community (Jan 2015 – Aug 2026)",
+  width: 820,
+  height: 700,
+  autosize: { type: "fit", contains: "padding" },
+  config: BASE_CONFIG,
+  data: DATA,
+  params: [
+    {
+      name: "minSales", value: 10,
+      bind: { input: "range", min: 1, max: 100, step: 1, name: "Minimum sales to colour a community: " }
+    },
+    {
+      name: "zoom", value: 62000,
+      bind: { input: "range", min: 40000, max: 220000, step: 1000, name: "Map zoom: " }
+    },
+    {
+      name: "showCircles", value: false,
+      bind: { input: "checkbox", name: "Show circles sized by number of sales: " }
+    }
+  ],
+  projection: { type: "mercator", center: [55.245, 25.11], scale: { expr: "zoom" } },
+  layer: [
+    /* 1. every community boundary (also those without any sales) */
+    {
+      /* separate (identical-content) URL so Vega-Lite does not merge it with the lookup source */
+      data: { url: GEO_URL + "?layer=base", format: { type: "json", property: "features" } },
+      transform: [{ calculate: "'No unit or villa sales in the analysis window'", as: "status" }],
+      mark: { type: "geoshape", fill: "#ececec", stroke: "#ffffff", strokeWidth: 0.6 },
+      encoding: {
+        tooltip: [
+          { field: "properties.CNAME_E", type: "nominal", title: "Community" },
+          { field: "status", type: "nominal", title: "Status" }
+        ]
+      }
+    },
+    /* 2. communities with enough sales: coloured by median price per m2 */
+    {
+      transform: [
+        ...COMMUNITY_STATS,
+        { filter: "datum.sales >= minSales" },
+        /* 7 quantile classes (equal number of communities per class) with a readable price-range label */
+        { window: [{ op: "ntile", param: 7, as: "cls" }], sort: [{ field: "median_price", order: "ascending" }] },
+        { joinaggregate: [{ op: "min", field: "median_price", as: "clsMin" }, { op: "max", field: "median_price", as: "clsMax" }], groupby: ["cls"] },
+        { calculate: "format(datum.clsMin, ',.0f') + ' – ' + format(datum.clsMax, ',.0f')", as: "priceClass" }
+      ],
+      params: [{
+        name: "hoverCommunity",
+        select: { type: "point", fields: ["cn"], on: "mouseover", clear: "mouseout" }
+      }],
+      mark: { type: "geoshape", stroke: "#ffffff" },
+      encoding: {
+        shape: { field: "geometry", type: "geojson" },
+        color: {
+          field: "priceClass", type: "ordinal",
+          sort: { field: "median_price", op: "min" },
+          scale: { scheme: { name: "yelloworangered", count: 7 } },
+          legend: {
+            title: ["Median price per m² (AED)", "7 quantile classes"],
+            symbolType: "square", symbolSize: 260, orient: "right", titleLimit: 260, labelLimit: 220
+          }
+        },
+        stroke: { condition: { param: "hoverCommunity", empty: false, value: "#111" }, value: "#ffffff" },
+        strokeWidth: { condition: { param: "hoverCommunity", empty: false, value: 2.2 }, value: 0.6 },
+        tooltip: TOOLTIP_STATS
+      }
+    },
+    /* 3. communities with too few sales: grey, but still identifiable */
+    {
+      transform: [
+        ...COMMUNITY_STATS,
+        { filter: "datum.sales < minSales" },
+        { calculate: "'Only ' + datum.sales + (datum.sales == 1 ? ' sale' : ' sales') + ': too few to colour reliably'", as: "status" }
+      ],
+      mark: { type: "geoshape", fill: "#a9a9a9", stroke: "#ffffff", strokeWidth: 0.6 },
+      encoding: {
+        shape: { field: "geometry", type: "geojson" },
+        tooltip: [...TOOLTIP_STATS, { field: "status", type: "nominal", title: "Note" }]
+      }
+    },
+    /* 4. optional: circles sized by number of sales (a channel that does encode volume) */
+    {
+      transform: [...COMMUNITY_STATS, { filter: "showCircles" }],
+      mark: { type: "circle", fill: "#1c2530", fillOpacity: 0.28, stroke: "#1c2530", strokeWidth: 1 },
+      encoding: {
+        longitude: { field: "props.Longitude", type: "quantitative" },
+        latitude: { field: "props.Latitude", type: "quantitative" },
+        size: {
+          field: "sales", type: "quantitative",
+          scale: { type: "sqrt", range: [10, 2200] },
+          legend: null
+        },
+        tooltip: TOOLTIP_STATS
+      }
+    }
+  ]
+};
+</script>
+
+<script>
+/* ---------------------------------------------------------------------
+   Render the three charts
+--------------------------------------------------------------------- */
+const EMBED_OPTS = { actions: { export: true, source: true, compiled: false, editor: false }, renderer: "svg" };
+
+function render(id, spec) {
+  return vegaEmbed(id, spec, EMBED_OPTS).catch(err => {
+    console.error(id, err);
+    document.querySelector(id).innerHTML = '<p class="error">Could not render this chart: ' + err.message + '</p>';
+  });
+}
+render("#vis1", spec1);
+render("#vis2", spec2);
+render("#vis3", spec3);
+
+/* ---------------------------------------------------------------------
+   Compute the answers from the data (so the text always matches the charts)
+--------------------------------------------------------------------- */
+(async function answers() {
+  try {
+    const [csvText, geo] = await Promise.all([
+      fetch(CSV_URL).then(r => r.text()),
+      fetch(GEO_URL).then(r => r.json())
+    ]);
+    const rows = vega.read(csvText, {
+      type: "csv",
+      parse: { instance_date: "date", meter_sale_price: "number", comm_num: "number" }
+    });
+    const start = Date.UTC(2015, 0, 1), end = Date.UTC(2026, 7, 31, 23, 59, 59, 999);
+    const win = rows.filter(r => r.instance_date >= start && r.instance_date <= end);
+    const fmt = new Intl.NumberFormat("en-US");
+    const set = (id, v) => { document.getElementById(id).textContent = v; };
+
+    // Task 1
+    const fridays = win.filter(r => new Date(r.instance_date).getUTCDay() === 5).length;
+    set("ans1-count", fmt.format(fridays));
+
+    // Task 2
+    const byMonth = new Map();
+    win.filter(r => r.trans_group_en === "Sales" && r.reg_type_en === "Off-Plan Properties").forEach(r => {
+      const d = new Date(r.instance_date);
+      const key = d.getUTCFullYear() * 100 + d.getUTCMonth();
+      byMonth.set(key, (byMonth.get(key) || 0) + 1);
+    });
+    let best = [0, -1];
+    byMonth.forEach((n, k) => { if (n > best[1]) best = [k, n]; });
+    const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    set("ans2-month", monthNames[best[0] % 100] + " " + Math.floor(best[0] / 100));
+    set("ans2-count", fmt.format(best[1]));
+
+    // Task 3
+    const names = new Map(geo.features.map(f => [String(f.properties.COMM_NUM), f.properties.CNAME_E]));
+    const byComm = new Map();
+    win.filter(r => r.trans_group_en === "Sales" && (r.property_type_en === "Unit" || r.property_type_en === "Villa") && r.meter_sale_price > 0)
+      .forEach(r => byComm.set(r.comm_num, (byComm.get(r.comm_num) || 0) + 1));
+    let top = [null, -1];
+    byComm.forEach((n, k) => { if (n > top[1]) top = [k, n]; });
+    set("ans3-name", names.get(String(top[0])) || ("Community " + top[0]));
+    set("ans3-num", top[0]);
+    set("ans3-count", fmt.format(top[1]));
+  } catch (e) {
+    console.warn("Could not recompute answers; showing pre-computed values.", e);
+  }
+})();
+</script>
+</body>
+</html>
